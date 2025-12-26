@@ -1,0 +1,356 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ AUTHENTICATION ============
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          Role      @default(USER)
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// ============ DESTINATIONS ============
+model Destination {
+  id          String            @id @default(cuid())
+  name        String
+  slug        String            @unique
+  location    String
+  country     String
+  region      DestinationRegion @default(INDIA)
+  image       String?
+  images      String[]
+  rating      Float             @default(0)
+  reviews     Int               @default(0)
+  description String            @db.Text
+  highlights  String[]
+  category    DestinationCategory
+  bestTime    String?
+  status      Status            @default(ACTIVE)
+  featured    Boolean           @default(false)
+  packages    Package[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([status, region])
+  @@index([status, featured])
+}
+
+enum DestinationRegion {
+  INDIA
+  WORLD
+}
+
+enum DestinationCategory {
+  MOUNTAIN
+  BEACH
+  CULTURAL
+  ADVENTURE
+  CITY
+  WILDLIFE
+  PILGRIMAGE
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  DRAFT
+}
+
+// ============ PACKAGES ============
+model Package {
+  id               String          @id @default(cuid())
+  name             String
+  slug             String          @unique
+  destinationId    String?
+  destination      Destination?    @relation(fields: [destinationId], references: [id])
+  destinationName  String
+  location         String
+  country          String          @default("India")
+  image            String?
+  images           String[]
+  price            Float
+  originalPrice    Float?
+  duration         String
+  groupSize        String
+  rating           Float           @default(0)
+  reviews          Int             @default(0)
+  description      String          @db.Text
+  highlights       String[]
+  inclusions       String[]
+  exclusions       String[]
+  itinerary        Json?
+  accommodations   Json?
+  faqs             Json?
+  policies         Json?
+  bestTime         String?
+  difficulty       PackageDifficulty @default(EASY)
+  type             PackageType     @default(PREMIUM)
+  badge            String?
+  featured         Boolean         @default(false)
+  status           Status          @default(ACTIVE)
+  packageReviews   Review[]
+  enquiries        PackageEnquiry[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([status, featured])
+  @@index([destinationId])
+}
+
+enum PackageType {
+  BUDGET
+  PREMIUM
+  LUXURY
+}
+
+enum PackageDifficulty {
+  EASY
+  MODERATE
+  CHALLENGING
+  DIFFICULT
+}
+
+// ============ PACKAGE ENQUIRIES ============
+model PackageEnquiry {
+  id           String        @id @default(cuid())
+  name         String
+  email        String
+  phone        String
+  packageId    String?
+  package      Package?      @relation(fields: [packageId], references: [id])
+  packageName  String?
+  travelDate   DateTime?
+  travelTime   String?
+  adults       Int           @default(1)
+  children     Int           @default(0)
+  rooms        Int           @default(1)
+  message      String?       @db.Text
+  status       EnquiryStatus @default(NEW)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([status])
+  @@index([packageId])
+  @@index([createdAt])
+}
+
+enum EnquiryStatus {
+  NEW
+  PENDING
+  CONTACTED
+  QUOTED
+  CONFIRMED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+// ============ BLOG ============
+model BlogPost {
+  id          String     @id @default(cuid())
+  title       String
+  slug        String     @unique
+  excerpt     String     @db.Text
+  content     String     @db.Text
+  image       String?
+  author      String
+  category    String
+  tags        String[]
+  featured    Boolean    @default(false)
+  published   Boolean    @default(false)
+  publishedAt DateTime?
+  readTime    String?
+  views       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([published, featured])
+  @@index([category])
+}
+
+// ============ TESTIMONIALS ============
+model Testimonial {
+  id        String            @id @default(cuid())
+  name      String
+  email     String?
+  location  String
+  rating    Int               @default(5)
+  comment   String            @db.Text
+  image     String?
+  packageId String?
+  tripDate  String?
+  featured  Boolean           @default(false)
+  status    TestimonialStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+enum TestimonialStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ============ PACKAGE REVIEWS ============
+model Review {
+  id        String         @id @default(cuid())
+  packageId String
+  name      String
+  email     String?
+  location  String?
+  rating    Int            @default(5)
+  title     String?
+  comment   String         @db.Text
+  images    String[]
+  verified  Boolean        @default(false)
+  helpful   Int            @default(0)
+  status    ReviewStatus   @default(PENDING)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@index([packageId, status])
+  @@index([status, createdAt])
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ============ CONTACT INQUIRIES ============
+model ContactInquiry {
+  id                 String        @id @default(cuid())
+  name               String
+  email              String
+  phone              String?
+  subject            String?
+  message            String        @db.Text
+  type               InquiryType   @default(CONTACT)
+  destination        String?
+  travelDate         String?
+  travelers          String?
+  groupSize          String?
+  budget             String?
+  travelType         String?
+  hotelType          String?
+  specialRequirements String?      @db.Text
+  notes              String?       @db.Text
+  status             InquiryStatus @default(NEW)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum InquiryType {
+  CONTACT
+  QUOTE
+  SUPPORT
+  FEEDBACK
+}
+
+enum InquiryStatus {
+  NEW
+  READ
+  RESPONDED
+  RESOLVED
+  SPAM
+}
+
+// ============ SITE SETTINGS ============
+model SiteSettings {
+  id             String   @id @default(cuid())
+  companyName    String   @default("Thapa Holidays")
+  tagline        String?
+  phone          String?
+  phone2         String?
+  whatsapp       String?
+  email          String?
+  supportEmail   String?
+  address        String?  @db.Text
+  emergencyPhone String?
+  website        String?
+  description    String?  @db.Text
+  logo           String?
+  favicon        String?
+  facebook       String?
+  instagram      String?
+  twitter        String?
+  youtube        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ============ ERROR LOGS ============
+model ErrorLog {
+  id           String   @id @default(cuid())
+  errorType    String
+  errorMessage String   @db.Text
+  errorStack   String?  @db.Text
+  pageUrl      String?
+  userAgent    String?
+  severity     String   @default("low")
+  resolved     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}

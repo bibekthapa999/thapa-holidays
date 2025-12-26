@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+
+# Block access to admin areas
+Disallow: /admin/
+Disallow: /api/admin/
+
+# Block access to API routes (except public ones)
+Disallow: /api/auth/
+Disallow: /api/upload/
+
+# Allow access to public API routes
+Allow: /api/blog
+Allow: /api/packages
+Allow: /api/destinations
+Allow: /api/contact
+Allow: /api/search
+Allow: /api/testimonials
+
+# Sitemap
+Sitemap: https://thapaholidays.com/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1
