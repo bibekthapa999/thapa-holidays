@@ -56,8 +56,12 @@ export async function PUT(
     delete body.policy;
 
     // Handle destination relation
-    if (body.destination) {
-      body.destinationId = body.destination.id;
+    if (body.destination !== undefined) {
+      if (body.destination) {
+        body.destinationId = body.destination.id;
+      } else {
+        body.destinationId = null;
+      }
       delete body.destination;
     }
 
