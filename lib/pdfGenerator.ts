@@ -521,10 +521,14 @@ export const generatePackagePDF = async (packageData: PackageData) => {
 
       // Create table for accommodation details
       const tableData = [];
-      if (accommodation.hotelCategory) tableData.push(["Category", accommodation.hotelCategory]);
-      if (accommodation.roomType) tableData.push(["Room Type", accommodation.roomType]);
-      if (accommodation.nights) tableData.push(["Nights", accommodation.nights.toString()]);
-      if (accommodation.destination?.name) tableData.push(["Destination", accommodation.destination.name]);
+      if (accommodation.hotelCategory)
+        tableData.push(["Category", accommodation.hotelCategory]);
+      if (accommodation.roomType)
+        tableData.push(["Room Type", accommodation.roomType]);
+      if (accommodation.nights)
+        tableData.push(["Nights", accommodation.nights.toString()]);
+      if (accommodation.destination?.name)
+        tableData.push(["Destination", accommodation.destination.name]);
 
       const tableWidth = pageWidth - 2 * margin;
       const labelColWidth = 35;

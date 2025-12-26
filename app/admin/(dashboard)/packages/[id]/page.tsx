@@ -291,7 +291,9 @@ export default function PackageFormPage({
         itinerary: form.itinerary.filter(
           (day) => day.title.trim() || day.description.trim()
         ),
-        accommodations: form.accommodations.filter((acc) => acc.hotelName.trim()),
+        accommodations: form.accommodations.filter((acc) =>
+          acc.hotelName.trim()
+        ),
         faq: form.faq.filter(
           (item) => item.question.trim() && item.answer.trim()
         ),

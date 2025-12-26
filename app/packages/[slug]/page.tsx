@@ -815,11 +815,20 @@ export default function PackageDetailPage() {
                                       <Badge className="bg-gradient-to-r from-teal-500 to-yellow-500 text-white border-0">
                                         {hotel.hotelCategory}
                                       </Badge>
-                                      <Badge variant="outline" className="text-gray-600">
+                                      <Badge
+                                        variant="outline"
+                                        className="text-gray-600"
+                                      >
                                         {hotel.roomType}
                                       </Badge>
-                                      <Badge variant="secondary" className="text-gray-700">
-                                        {hotel.nights} {hotel.nights === 1 ? 'Night' : 'Nights'}
+                                      <Badge
+                                        variant="secondary"
+                                        className="text-gray-700"
+                                      >
+                                        {hotel.nights}{" "}
+                                        {hotel.nights === 1
+                                          ? "Night"
+                                          : "Nights"}
                                       </Badge>
                                     </div>
                                     {hotel.destination && (
