@@ -83,10 +83,17 @@ interface Package {
     accommodation?: string;
   }[];
   accommodations?: {
-    name: string;
-    type: string;
-    description: string;
-    amenities?: string[];
+    id: string;
+    destinationId?: string;
+    destination?: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+    hotelName: string;
+    roomType: string;
+    hotelCategory: string;
+    nights: number;
   }[];
   faqs?: { question: string; answer: string }[];
   policies?: {
@@ -793,39 +800,37 @@ export default function PackageDetailPage() {
                           <div className="grid gap-4">
                             {packageData.accommodations.map((hotel, index) => (
                               <motion.div
-                                key={index}
+                                key={hotel.id || index}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
                                 className="bg-white border border-gray-200 rounded-xl p-5 hover:border-teal-300 transition-all"
                               >
                                 <div className="flex items-start justify-between mb-3">
-                                  <div>
+                                  <div className="flex-1">
                                     <h4 className="font-bold text-gray-900 text-lg">
-                                      {hotel.name}
+                                      {hotel.hotelName}
                                     </h4>
-                                    <Badge className="mt-2 bg-gradient-to-r from-teal-500 to-yellow-500 text-white border-0">
-                                      {hotel.type}
-                                    </Badge>
+                                    <div className="flex items-center gap-2 mt-2">
+                                      <Badge className="bg-gradient-to-r from-teal-500 to-yellow-500 text-white border-0">
+                                        {hotel.hotelCategory}
+                                      </Badge>
+                                      <Badge variant="outline" className="text-gray-600">
+                                        {hotel.roomType}
+                                      </Badge>
+                                      <Badge variant="secondary" className="text-gray-700">
+                                        {hotel.nights} {hotel.nights === 1 ? 'Night' : 'Nights'}
+                                      </Badge>
+                                    </div>
+                                    {hotel.destination && (
+                                      <p className="text-sm text-gray-500 mt-2 flex items-center gap-1">
+                                        <MapPin className="h-3 w-3" />
+                                        {hotel.destination.name}
+                                      </p>
+                                    )}
                                   </div>
                                   <BedDouble className="h-6 w-6 text-teal-600" />
                                 </div>
-                                <p className="text-gray-600 mb-4">
-                                  {hotel.description}
-                                </p>
-                                {hotel.amenities &&
-                                  hotel.amenities.length > 0 && (
-                                    <div className="flex flex-wrap gap-2">
-                                      {hotel.amenities.map((amenity, i) => (
-                                        <span
-                                          key={i}
-                                          className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full"
-                                        >
-                                          {amenity}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  )}
                               </motion.div>
                             ))}
                           </div>

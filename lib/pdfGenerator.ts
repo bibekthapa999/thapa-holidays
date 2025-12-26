@@ -49,11 +49,16 @@ interface PackageData {
     activities?: string[];
   }[];
   accommodations?: {
-    name: string;
-    type: string;
-    description: string;
-    amenities?: string[];
-    rating?: string;
+    id: string;
+    destinationId?: string;
+    destination?: {
+      id: string;
+      name: string;
+    };
+    hotelName: string;
+    roomType: string;
+    hotelCategory: string;
+    nights: number;
   }[];
   faqs?: { question: string; answer: string }[];
   policies?: {
@@ -511,22 +516,15 @@ export const generatePackagePDF = async (packageData: PackageData) => {
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "bold");
-      pdf.text(accommodation.name, margin + 5, yPosition + 2);
+      pdf.text(accommodation.hotelName, margin + 5, yPosition + 2);
       yPosition += 17;
 
       // Create table for accommodation details
       const tableData = [];
-      if (accommodation.type) tableData.push(["Type", accommodation.type]);
-      if (accommodation.rating)
-        tableData.push(["Rating", accommodation.rating]);
-      if (accommodation.description)
-        tableData.push(["Description", accommodation.description]);
-      if (accommodation.amenities && accommodation.amenities.length > 0) {
-        tableData.push([
-          "Amenities",
-          accommodation.amenities.map((amenity) => `• ${amenity}`).join("\n"),
-        ]);
-      }
+      if (accommodation.hotelCategory) tableData.push(["Category", accommodation.hotelCategory]);
+      if (accommodation.roomType) tableData.push(["Room Type", accommodation.roomType]);
+      if (accommodation.nights) tableData.push(["Nights", accommodation.nights.toString()]);
+      if (accommodation.destination?.name) tableData.push(["Destination", accommodation.destination.name]);
 
       const tableWidth = pageWidth - 2 * margin;
       const labelColWidth = 35;

@@ -18,6 +18,11 @@ export async function GET(
       },
       include: {
         destination: true,
+        accommodations: {
+          include: {
+            destination: true,
+          },
+        },
       },
     });
 
@@ -69,6 +74,10 @@ export async function PUT(
     if (body.price) body.price = parseFloat(body.price);
     if (body.originalPrice) body.originalPrice = parseFloat(body.originalPrice);
 
+    // Handle accommodations
+    let accommodationsData = body.accommodations;
+    delete body.accommodations;
+
     const packageData = await prisma.package.update({
       where: { id },
       data: {
@@ -76,6 +85,34 @@ export async function PUT(
         updatedAt: new Date(),
       },
     });
+
+    // Update accommodations
+    if (accommodationsData && Array.isArray(accommodationsData)) {
+      // Delete existing accommodations
+      await prisma.accommodation.deleteMany({
+        where: { packageId: id },
+      });
+
+      // Create new accommodations
+      for (const acc of accommodationsData) {
+        // Handle destination relation for each accommodation
+        let destinationId = null;
+        if (acc.destination) {
+          destinationId = acc.destination.id;
+        }
+
+        await prisma.accommodation.create({
+          data: {
+            packageId: id,
+            destinationId,
+            hotelName: acc.hotelName,
+            roomType: acc.roomType,
+            hotelCategory: acc.hotelCategory,
+            nights: acc.nights || 1,
+          },
+        });
+      }
+    }
 
     // Revalidate paths to update cache
     revalidatePath("/");

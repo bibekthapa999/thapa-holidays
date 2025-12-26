@@ -24,18 +24,54 @@ export async function GET(request: NextRequest) {
     if (destinationId) where.destinationId = destinationId;
     if (destination)
       where.destinationName = { contains: destination, mode: "insensitive" };
-    if (minPrice) where.price = { ...where.price, gte: parseFloat(minPrice) };
-    if (maxPrice) where.price = { ...where.price, lte: parseFloat(maxPrice) };
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) {
+        const min = parseFloat(minPrice);
+        if (!isNaN(min)) where.price.gte = min;
+      }
+      if (maxPrice) {
+        const max = parseFloat(maxPrice);
+        if (!isNaN(max)) where.price.lte = max;
+      }
+    }
 
     const packages = await prisma.package.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        destinationId: true,
+        destinationName: true,
+        location: true,
+        country: true,
+        image: true,
+        images: true,
+        price: true,
+        originalPrice: true,
+        duration: true,
+        groupSize: true,
+        rating: true,
+        reviews: true,
+        description: true,
+        highlights: true,
+        inclusions: true,
+        exclusions: true,
+        bestTime: true,
+        difficulty: true,
+        type: true,
+        badge: true,
+        featured: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
         destination: {
           select: { id: true, name: true, slug: true },
         },
       },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-      ...(limit ? { take: parseInt(limit) } : {}),
+      ...(limit && !isNaN(parseInt(limit)) ? { take: parseInt(limit) } : {}),
     });
 
     // Map destination name for frontend
@@ -124,7 +160,6 @@ export async function POST(request: NextRequest) {
         inclusions: inclusions || [],
         exclusions: exclusions || [],
         itinerary: itinerary || null,
-        accommodations: accommodations || null,
         faqs: faq || null,
         policies: policy || null,
         bestTime,
@@ -135,6 +170,27 @@ export async function POST(request: NextRequest) {
         status: status || "ACTIVE",
       },
     });
+
+    // Create accommodations if provided
+    if (accommodations && Array.isArray(accommodations)) {
+      for (const acc of accommodations) {
+        let accDestinationId = null;
+        if (acc.destination) {
+          accDestinationId = acc.destination.id;
+        }
+
+        await prisma.accommodation.create({
+          data: {
+            packageId: packageData.id,
+            destinationId: accDestinationId,
+            hotelName: acc.hotelName,
+            roomType: acc.roomType,
+            hotelCategory: acc.hotelCategory,
+            nights: acc.nights || 1,
+          },
+        });
+      }
+    }
 
     // Revalidate paths to update cache
     revalidatePath("/");

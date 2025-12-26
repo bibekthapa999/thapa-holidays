@@ -53,11 +53,16 @@ interface ItineraryDay {
 }
 
 interface AccommodationDetail {
-  type: string;
-  name: string;
-  description: string;
-  rating?: string;
-  amenities?: string[];
+  id?: string;
+  destinationId?: string;
+  destination?: {
+    id: string;
+    name: string;
+  };
+  hotelName: string;
+  roomType: string;
+  hotelCategory: string;
+  nights: number;
 }
 
 interface FAQItem {
@@ -173,11 +178,11 @@ export default function PackageFormPage({
     ],
     accommodations: [
       {
-        type: "Hotel",
-        name: "",
-        description: "",
-        rating: "",
-        amenities: [""],
+        hotelName: "",
+        roomType: "",
+        hotelCategory: "",
+        destinationId: "",
+        nights: 1,
       },
     ],
     faq: [
@@ -242,11 +247,11 @@ export default function PackageFormPage({
             ? data.accommodations
             : [
                 {
-                  type: "Hotel",
-                  name: "",
-                  description: "",
-                  rating: "",
-                  amenities: [""],
+                  hotelName: "",
+                  roomType: "",
+                  hotelCategory: "",
+                  destinationId: "",
+                  nights: 1,
                 },
               ],
           faq: data.faqs?.length ? data.faqs : [{ question: "", answer: "" }],
@@ -286,7 +291,7 @@ export default function PackageFormPage({
         itinerary: form.itinerary.filter(
           (day) => day.title.trim() || day.description.trim()
         ),
-        accommodations: form.accommodations.filter((acc) => acc.name.trim()),
+        accommodations: form.accommodations.filter((acc) => acc.hotelName.trim()),
         faq: form.faq.filter(
           (item) => item.question.trim() && item.answer.trim()
         ),
@@ -430,11 +435,11 @@ export default function PackageFormPage({
       accommodations: [
         ...prev.accommodations,
         {
-          type: "Hotel",
-          name: "",
-          description: "",
-          rating: "",
-          amenities: [""],
+          hotelName: "",
+          roomType: "",
+          hotelCategory: "",
+          nights: 1,
+          destinationId: "",
         },
       ],
     }));
@@ -1318,11 +1323,11 @@ export default function PackageFormPage({
                             accommodations: [
                               ...prev.accommodations,
                               {
-                                type: "Hotel",
-                                name: "",
-                                description: "",
-                                rating: "",
-                                amenities: [""],
+                                hotelName: "",
+                                roomType: "",
+                                hotelCategory: "",
+                                destinationId: "",
+                                nights: 1,
                               },
                             ],
                           }))
@@ -1354,7 +1359,7 @@ export default function PackageFormPage({
                               </Badge>
                               <ChevronRight className="h-4 w-4 text-gray-400" />
                               <h4 className="font-semibold text-gray-900">
-                                {acc.name || "New Accommodation"}
+                                {acc.hotelName || "New Accommodation"}
                               </h4>
                             </div>
                             <Button
@@ -1377,41 +1382,13 @@ export default function PackageFormPage({
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label>Type</Label>
-                              <Select
-                                value={acc.type}
-                                onValueChange={(value) =>
-                                  handleAccommodationChange(
-                                    accIndex,
-                                    "type",
-                                    value
-                                  )
-                                }
-                              >
-                                <SelectTrigger className="border-gray-200 focus:border-teal-500 focus:ring-teal-500">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Hotel">Hotel</SelectItem>
-                                  <SelectItem value="Resort">Resort</SelectItem>
-                                  <SelectItem value="Homestay">
-                                    Homestay
-                                  </SelectItem>
-                                  <SelectItem value="Camp">Camp</SelectItem>
-                                  <SelectItem value="Houseboat">
-                                    Houseboat
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="space-y-2">
-                              <Label>Name</Label>
+                              <Label>Hotel Name</Label>
                               <Input
-                                value={acc.name}
+                                value={acc.hotelName}
                                 onChange={(e) =>
                                   handleAccommodationChange(
                                     accIndex,
-                                    "name",
+                                    "hotelName",
                                     e.target.value
                                   )
                                 }
@@ -1419,110 +1396,81 @@ export default function PackageFormPage({
                                 className="border-gray-200 focus:border-teal-500 focus:ring-teal-500"
                               />
                             </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Description</Label>
-                            <Textarea
-                              value={acc.description}
-                              onChange={(e) =>
-                                handleAccommodationChange(
-                                  accIndex,
-                                  "description",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Describe the accommodation..."
-                              rows={3}
-                              className="border-gray-200 focus:border-teal-500 focus:ring-teal-500"
-                            />
+                            <div className="space-y-2">
+                              <Label>Room Type</Label>
+                              <Input
+                                value={acc.roomType}
+                                onChange={(e) =>
+                                  handleAccommodationChange(
+                                    accIndex,
+                                    "roomType",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="e.g., Deluxe Room"
+                                className="border-gray-200 focus:border-teal-500 focus:ring-teal-500"
+                              />
+                            </div>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label>Rating</Label>
+                              <Label>Hotel Category</Label>
                               <Input
-                                value={acc.rating}
+                                value={acc.hotelCategory}
                                 onChange={(e) =>
                                   handleAccommodationChange(
                                     accIndex,
-                                    "rating",
+                                    "hotelCategory",
                                     e.target.value
                                   )
                                 }
-                                placeholder="e.g., 4.5 stars"
+                                placeholder="e.g., 3 Star, Luxury, Budget"
                                 className="border-gray-200 focus:border-teal-500 focus:ring-teal-500"
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label>Amenities</Label>
-                              <div className="space-y-2">
-                                {acc.amenities?.map((amenity, amenityIndex) => (
-                                  <div
-                                    key={amenityIndex}
-                                    className="flex gap-2"
-                                  >
-                                    <Input
-                                      value={amenity}
-                                      onChange={(e) => {
-                                        const newAmenities = [
-                                          ...(acc.amenities || []),
-                                        ];
-                                        newAmenities[amenityIndex] =
-                                          e.target.value;
-                                        handleAccommodationChange(
-                                          accIndex,
-                                          "amenities",
-                                          newAmenities
-                                        );
-                                      }}
-                                      placeholder="e.g., WiFi, Pool"
-                                      className="border-gray-200 focus:border-teal-500 focus:ring-teal-500"
-                                    />
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => {
-                                        const newAmenities = (
-                                          acc.amenities || []
-                                        ).filter((_, i) => i !== amenityIndex);
-                                        handleAccommodationChange(
-                                          accIndex,
-                                          "amenities",
-                                          newAmenities.length
-                                            ? newAmenities
-                                            : [""]
-                                        );
-                                      }}
-                                      className="text-gray-400 hover:text-gray-600"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                ))}
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => {
-                                    const newAmenities = [
-                                      ...(acc.amenities || []),
-                                      "",
-                                    ];
-                                    handleAccommodationChange(
-                                      accIndex,
-                                      "amenities",
-                                      newAmenities
-                                    );
-                                  }}
-                                  className="w-full border-gray-200 hover:border-gray-300"
-                                >
-                                  <Plus className="h-4 w-4 mr-2" />
-                                  Add Amenity
-                                </Button>
-                              </div>
+                              <Label>Number of Nights</Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={acc.nights}
+                                onChange={(e) =>
+                                  handleAccommodationChange(
+                                    accIndex,
+                                    "nights",
+                                    parseInt(e.target.value) || 1
+                                  )
+                                }
+                                placeholder="1"
+                                className="border-gray-200 focus:border-teal-500 focus:ring-teal-500"
+                              />
                             </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Destination</Label>
+                            <Select
+                              value={acc.destinationId}
+                              onValueChange={(value) =>
+                                handleAccommodationChange(
+                                  accIndex,
+                                  "destinationId",
+                                  value
+                                )
+                              }
+                            >
+                              <SelectTrigger className="border-gray-200 focus:border-teal-500 focus:ring-teal-500">
+                                <SelectValue placeholder="Select destination" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {destinations.map((dest) => (
+                                  <SelectItem key={dest.id} value={dest.id}>
+                                    {dest.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                         </motion.div>
                       ))}
