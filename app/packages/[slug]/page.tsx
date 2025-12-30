@@ -81,6 +81,7 @@ interface Package {
     description: string;
     meals?: string;
     accommodation?: string;
+    activities?: string[];
   }[];
   accommodations?: {
     id: string;
@@ -757,6 +758,26 @@ export default function PackageDetailPage() {
                                   <p className="text-gray-600 leading-relaxed">
                                     {day.description}
                                   </p>
+                                  {day.activities &&
+                                    day.activities.length > 0 && (
+                                      <div className="mt-3">
+                                        <h5 className="font-semibold text-gray-800 mb-2">
+                                          Activities:
+                                        </h5>
+                                        <ul className="list-disc list-inside text-gray-600 space-y-1">
+                                          {day.activities.map(
+                                            (activity, actIndex) => (
+                                              <li
+                                                key={actIndex}
+                                                className="text-sm"
+                                              >
+                                                {activity}
+                                              </li>
+                                            )
+                                          )}
+                                        </ul>
+                                      </div>
+                                    )}
                                   {(day.meals || day.accommodation) && (
                                     <div className="flex flex-wrap gap-4 mt-4 text-sm">
                                       {day.meals && (
