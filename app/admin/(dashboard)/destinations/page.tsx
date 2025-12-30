@@ -20,6 +20,13 @@ import {
   X,
   Sparkles,
   Star,
+  Waves,
+  Landmark,
+  Compass,
+  Building2,
+  TreePine,
+  Church,
+  Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,6 +90,11 @@ const categories = [
   "CITY",
   "WILDLIFE",
   "PILGRIMAGE",
+  "DESERT",
+  "HILL_STATION",
+  "ISLAND",
+  "LAKE",
+  "FOREST",
 ];
 
 const regions = ["INDIA", "WORLD"];
@@ -115,12 +127,17 @@ const cardVariants = {
 
 const categoryIcons: Record<string, any> = {
   MOUNTAIN: Mountain,
-  BEACH: Eye,
-  CULTURAL: Globe,
-  ADVENTURE: Package,
-  CITY: MapPin,
-  WILDLIFE: Eye,
-  PILGRIMAGE: Globe,
+  BEACH: Waves,
+  CULTURAL: Landmark,
+  ADVENTURE: Compass,
+  CITY: Building2,
+  WILDLIFE: TreePine,
+  PILGRIMAGE: Church,
+  DESERT: Globe,
+  HILL_STATION: Mountain,
+  ISLAND: Waves,
+  LAKE: Waves,
+  FOREST: TreePine,
 };
 
 export default function AdminDestinationsPage() {
@@ -228,6 +245,16 @@ export default function AdminDestinationsPage() {
         return "bg-emerald-100 text-emerald-700 border-emerald-200";
       case "PILGRIMAGE":
         return "bg-amber-100 text-amber-700 border-amber-200";
+      case "DESERT":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case "HILL_STATION":
+        return "bg-indigo-100 text-indigo-700 border-indigo-200";
+      case "ISLAND":
+        return "bg-teal-100 text-teal-700 border-teal-200";
+      case "LAKE":
+        return "bg-sky-100 text-sky-700 border-sky-200";
+      case "FOREST":
+        return "bg-green-100 text-green-700 border-green-200";
       default:
         return "bg-gray-100 text-gray-700 border-gray-200";
     }

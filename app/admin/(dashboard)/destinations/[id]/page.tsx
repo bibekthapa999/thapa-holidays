@@ -30,6 +30,7 @@ interface DestinationForm {
   images: string[];
   description: string;
   highlights: string[];
+  category: string;
   bestTime: string;
   featured: boolean;
   status: string;
@@ -59,6 +60,7 @@ export default function DestinationFormPage({
     images: [],
     description: "",
     highlights: [""],
+    category: "MOUNTAIN",
     bestTime: "",
     featured: false,
     status: "ACTIVE",
@@ -321,6 +323,36 @@ export default function DestinationFormPage({
                     <SelectContent>
                       <SelectItem value="INDIA">India</SelectItem>
                       <SelectItem value="WORLD">International</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category *</Label>
+                  <Select
+                    value={form.category}
+                    onValueChange={(value) =>
+                      setForm({ ...form, category: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MOUNTAIN">🏔️ Mountain</SelectItem>
+                      <SelectItem value="BEACH">🏖️ Beach</SelectItem>
+                      <SelectItem value="CULTURAL">🏛️ Cultural</SelectItem>
+                      <SelectItem value="ADVENTURE">🧗 Adventure</SelectItem>
+                      <SelectItem value="CITY">🏙️ City</SelectItem>
+                      <SelectItem value="WILDLIFE">🦌 Wildlife</SelectItem>
+                      <SelectItem value="PILGRIMAGE">⛪ Pilgrimage</SelectItem>
+                      <SelectItem value="DESERT">🏜️ Desert</SelectItem>
+                      <SelectItem value="HILL_STATION">
+                        🏔️ Hill Station
+                      </SelectItem>
+                      <SelectItem value="ISLAND">🏝️ Island</SelectItem>
+                      <SelectItem value="LAKE">🏞️ Lake</SelectItem>
+                      <SelectItem value="FOREST">🌲 Forest</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -105,6 +105,11 @@ enum DestinationCategory {
   CITY
   WILDLIFE
   PILGRIMAGE
+  DESERT
+  HILL_STATION
+  ISLAND
+  LAKE
+  FOREST
 }
 
 enum Status {

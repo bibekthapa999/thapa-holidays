@@ -17,6 +17,7 @@ import {
   Grid,
   List,
   X,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -137,6 +138,26 @@ export default function AdminPackagesPage() {
       toast.error("Failed to delete package");
     } finally {
       setDeleteId(null);
+    }
+  };
+
+  const handleDuplicate = async (packageId: string) => {
+    try {
+      const res = await fetch(`/api/packages/${packageId}/duplicate`, {
+        method: "POST",
+      });
+
+      if (res.ok) {
+        const newPackage = await res.json();
+        setPackages([newPackage, ...packages]);
+        toast.success(
+          "Package duplicated successfully! You can now edit the draft version."
+        );
+      } else {
+        toast.error("Failed to duplicate package");
+      }
+    } catch (error) {
+      toast.error("Failed to duplicate package");
     }
   };
 
@@ -542,6 +563,13 @@ export default function AdminPackagesPage() {
                                 View Live
                               </Link>
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDuplicate(pkg.id)}
+                              className="cursor-pointer"
+                            >
+                              <Copy className="h-4 w-4 mr-2" />
+                              Duplicate Package
+                            </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                               <Link
                                 href={`/admin/packages/${pkg.id}`}
@@ -700,6 +728,13 @@ export default function AdminPackagesPage() {
                                     View
                                   </Link>
                                 </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDuplicate(pkg.id)}
+                                  className="cursor-pointer"
+                                >
+                                  <Copy className="h-4 w-4 mr-2" />
+                                  Duplicate
+                                </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
                                   <Link href={`/admin/packages/${pkg.id}`}>
                                     <Edit className="h-4 w-4 mr-2" />
@@ -786,6 +821,3 @@ export default function AdminPackagesPage() {
     </div>
   );
 }
-
-
-

@@ -22,6 +22,9 @@ import {
   ChevronRight,
   X,
   Loader2,
+  TreePine,
+  Church,
+  Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -100,6 +103,20 @@ export default function DestinationsPage() {
         return <Compass className="h-3.5 w-3.5 sm:h-4 sm:w-4" />;
       case "CITY":
         return <Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />;
+      case "WILDLIFE":
+        return <TreePine className="h-3.5 w-3.5 sm:h-4 sm:w-4" />;
+      case "PILGRIMAGE":
+        return <Church className="h-3.5 w-3.5 sm:h-4 sm:w-4" />;
+      case "DESERT":
+        return <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4" />;
+      case "HILL_STATION":
+        return <Mountain className="h-3.5 w-3.5 sm:h-4 sm:w-4" />;
+      case "ISLAND":
+        return <Waves className="h-3.5 w-3.5 sm:h-4 sm:w-4" />;
+      case "LAKE":
+        return <Waves className="h-3.5 w-3.5 sm:h-4 sm:w-4" />;
+      case "FOREST":
+        return <TreePine className="h-3.5 w-3.5 sm:h-4 sm:w-4" />;
       default:
         return <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />;
     }
@@ -117,6 +134,20 @@ export default function DestinationsPage() {
         return "bg-orange-50 border-orange-200 text-orange-700";
       case "CITY":
         return "bg-pink-50 border-pink-200 text-pink-700";
+      case "WILDLIFE":
+        return "bg-emerald-50 border-emerald-200 text-emerald-700";
+      case "PILGRIMAGE":
+        return "bg-amber-50 border-amber-200 text-amber-700";
+      case "DESERT":
+        return "bg-yellow-50 border-yellow-200 text-yellow-700";
+      case "HILL_STATION":
+        return "bg-indigo-50 border-indigo-200 text-indigo-700";
+      case "ISLAND":
+        return "bg-teal-50 border-teal-200 text-teal-700";
+      case "LAKE":
+        return "bg-sky-50 border-sky-200 text-sky-700";
+      case "FOREST":
+        return "bg-green-50 border-green-200 text-green-700";
       default:
         return "bg-gray-50 border-gray-200 text-gray-700";
     }

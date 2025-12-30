@@ -16,6 +16,9 @@ import {
   Globe,
   Flag,
   ChevronRight,
+  TreePine,
+  Church,
+  Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -78,6 +81,20 @@ const Destinations = () => {
         return <Compass className="h-4 w-4" />;
       case "CITY":
         return <Building2 className="h-4 w-4" />;
+      case "WILDLIFE":
+        return <TreePine className="h-4 w-4" />;
+      case "PILGRIMAGE":
+        return <Church className="h-4 w-4" />;
+      case "DESERT":
+        return <Globe className="h-4 w-4" />;
+      case "HILL_STATION":
+        return <Mountain className="h-4 w-4" />;
+      case "ISLAND":
+        return <Waves className="h-4 w-4" />;
+      case "LAKE":
+        return <Waves className="h-4 w-4" />;
+      case "FOREST":
+        return <TreePine className="h-4 w-4" />;
       default:
         return <MapPin className="h-4 w-4" />;
     }
@@ -95,6 +112,20 @@ const Destinations = () => {
         return "bg-orange-100 text-orange-700 border-orange-200";
       case "CITY":
         return "bg-pink-100 text-pink-700 border-pink-200";
+      case "WILDLIFE":
+        return "bg-emerald-100 text-emerald-700 border-emerald-200";
+      case "PILGRIMAGE":
+        return "bg-amber-100 text-amber-700 border-amber-200";
+      case "DESERT":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case "HILL_STATION":
+        return "bg-indigo-100 text-indigo-700 border-indigo-200";
+      case "ISLAND":
+        return "bg-teal-100 text-teal-700 border-teal-200";
+      case "LAKE":
+        return "bg-sky-100 text-sky-700 border-sky-200";
+      case "FOREST":
+        return "bg-green-100 text-green-700 border-green-200";
       default:
         return "bg-gray-100 text-gray-700 border-gray-200";
     }
