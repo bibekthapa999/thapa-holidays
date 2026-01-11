@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { cn, stripHtml } from "@/lib/utils";
 
 interface BlogPost {
   id: string;
@@ -83,7 +83,7 @@ export default function BlogPage() {
   const filteredPosts = posts.filter((post) => {
     const matchesSearch =
       post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+      stripHtml(post.excerpt).toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
@@ -446,9 +446,11 @@ export default function BlogPage() {
                       </motion.div>
 
                       {/* Excerpt */}
-                      <p className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed">
-                        {post.excerpt}
-                      </p>
+                      <div className="text-gray-600 text-sm mb-4 line-clamp-3 leading-relaxed prose prose-sm max-w-none [&>*]:my-1 [&>p]:leading-relaxed [&>strong]:font-semibold [&>em]:italic">
+                        <div
+                          dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                        />
+                      </div>
 
                       {/* Meta Information */}
                       <div className="flex items-center justify-between text-xs text-gray-500 mb-4">

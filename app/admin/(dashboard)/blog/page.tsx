@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -24,7 +25,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -33,14 +33,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -48,8 +40,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -61,6 +51,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { stripHtml } from "@/lib/utils";
 
 interface BlogPost {
   id: string;
@@ -135,20 +126,13 @@ const cardVariants = {
 };
 
 export default function BlogAdminPage() {
+  const router = useRouter();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [filterPublished, setFilterPublished] = useState("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-
-  // Form state
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingPost, setEditingPost] =
-    useState<Partial<BlogPost>>(defaultPost);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageUploading, setImageUploading] = useState(false);
-  const [tagInput, setTagInput] = useState("");
 
   // Delete state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -173,169 +157,6 @@ export default function BlogAdminPage() {
     fetchPosts();
   }, [fetchPosts]);
 
-  const generateSlug = (title: string) => {
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
-  };
-
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const title = e.target.value;
-    setEditingPost((prev) => ({
-      ...prev,
-      title,
-      slug: prev?.id ? prev.slug : generateSlug(title),
-    }));
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setImageUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "blog");
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) throw new Error("Upload failed");
-
-      const data = await response.json();
-      setEditingPost((prev) => ({ ...prev, image: data.url }));
-      toast.success("Image uploaded successfully");
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Failed to upload image");
-    } finally {
-      setImageUploading(false);
-    }
-  };
-
-  const handleAddTag = () => {
-    if (tagInput.trim() && !editingPost.tags?.includes(tagInput.trim())) {
-      setEditingPost((prev) => ({
-        ...prev,
-        tags: [...(prev.tags || []), tagInput.trim()],
-      }));
-      setTagInput("");
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setEditingPost((prev) => ({
-      ...prev,
-      tags: prev.tags?.filter((tag) => tag !== tagToRemove) || [],
-    }));
-  };
-
-  const handleSubmit = async () => {
-    if (!editingPost.title || !editingPost.content || !editingPost.excerpt) {
-      toast.error("Please fill in title, excerpt, and content");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const method = editingPost.id ? "PUT" : "POST";
-      const url = editingPost.id ? `/api/blog/${editingPost.id}` : "/api/blog";
-
-      const body = {
-        ...editingPost,
-        publishedAt: editingPost.published ? new Date().toISOString() : null,
-      };
-
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) throw new Error("Failed to save post");
-
-      toast.success(
-        editingPost.id
-          ? "Post updated successfully"
-          : "Post created successfully"
-      );
-      setIsDialogOpen(false);
-      setEditingPost(defaultPost);
-      fetchPosts();
-    } catch (error) {
-      console.error("Error saving post:", error);
-      toast.error("Failed to save post");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!postToDelete) return;
-
-    try {
-      const response = await fetch(`/api/blog/${postToDelete.id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete post");
-
-      toast.success("Post deleted successfully");
-      fetchPosts();
-    } catch (error) {
-      console.error("Error deleting post:", error);
-      toast.error("Failed to delete post");
-    } finally {
-      setDeleteDialogOpen(false);
-      setPostToDelete(null);
-    }
-  };
-
-  const togglePublished = async (post: BlogPost) => {
-    try {
-      const response = await fetch(`/api/blog/${post.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          published: !post.published,
-          publishedAt: !post.published ? new Date().toISOString() : null,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Failed to update post");
-
-      toast.success(post.published ? "Post unpublished" : "Post published");
-      fetchPosts();
-    } catch (error) {
-      console.error("Error updating post:", error);
-      toast.error("Failed to update post");
-    }
-  };
-
-  const toggleFeatured = async (post: BlogPost) => {
-    try {
-      const response = await fetch(`/api/blog/${post.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ featured: !post.featured }),
-      });
-
-      if (!response.ok) throw new Error("Failed to update post");
-
-      toast.success(
-        post.featured ? "Removed from featured" : "Added to featured"
-      );
-      fetchPosts();
-    } catch (error) {
-      console.error("Error updating post:", error);
-      toast.error("Failed to update post");
-    }
-  };
-
   const clearFilters = () => {
     setSearchTerm("");
     setFilterCategory("all");
@@ -345,7 +166,7 @@ export default function BlogAdminPage() {
   const filteredPosts = posts.filter((post) => {
     const matchesSearch =
       post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
+      stripHtml(post.excerpt).toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
       filterCategory === "all" || post.category === filterCategory;
     const matchesPublished =
@@ -368,6 +189,80 @@ export default function BlogAdminPage() {
     filterCategory !== "all" && "Category",
     filterPublished !== "all" && "Status",
   ].filter(Boolean).length;
+
+  const togglePublished = async (post: BlogPost) => {
+    try {
+      const response = await fetch(`/api/blog/${post.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          published: !post.published,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success(
+          `Post ${!post.published ? "published" : "unpublished"} successfully`
+        );
+        fetchPosts();
+      } else {
+        toast.error("Failed to update post status");
+      }
+    } catch (error) {
+      console.error("Error toggling published status:", error);
+      toast.error("Failed to update post status");
+    }
+  };
+
+  const toggleFeatured = async (post: BlogPost) => {
+    try {
+      const response = await fetch(`/api/blog/${post.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          featured: !post.featured,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success(
+          `Post ${!post.featured ? "featured" : "unfeatured"} successfully`
+        );
+        fetchPosts();
+      } else {
+        toast.error("Failed to update post status");
+      }
+    } catch (error) {
+      console.error("Error toggling featured status:", error);
+      toast.error("Failed to update post status");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!postToDelete) return;
+
+    try {
+      const response = await fetch(`/api/blog/${postToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Post deleted successfully");
+        setDeleteDialogOpen(false);
+        setPostToDelete(null);
+        fetchPosts();
+      } else {
+        toast.error("Failed to delete post");
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error("Failed to delete post");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6 lg:p-8">
@@ -404,10 +299,7 @@ export default function BlogAdminPage() {
             </div>
             <div className="flex items-center gap-3">
               <Button
-                onClick={() => {
-                  setEditingPost(defaultPost);
-                  setIsDialogOpen(true);
-                }}
+                onClick={() => router.push("/admin/blog/new")}
                 className="h-9 bg-linear-to-r from-teal-500 to-yellow-500 hover:from-teal-600 hover:to-yellow-600 shadow-lg hover:shadow-xl"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -755,10 +647,7 @@ export default function BlogAdminPage() {
                       : "Get started by creating your first blog post"}
                   </p>
                   <Button
-                    onClick={() => {
-                      setEditingPost(defaultPost);
-                      setIsDialogOpen(true);
-                    }}
+                    onClick={() => router.push("/admin/blog/new")}
                     className="bg-linear-to-r from-teal-500 to-yellow-500 hover:from-teal-600 hover:to-yellow-600 shadow-lg hover:shadow-xl"
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -819,10 +708,9 @@ export default function BlogAdminPage() {
                             size="icon"
                             variant="secondary"
                             className="h-8 w-8 bg-white/90 backdrop-blur-sm border-white/20 shadow-lg"
-                            onClick={() => {
-                              setEditingPost(post);
-                              setIsDialogOpen(true);
-                            }}
+                            onClick={() =>
+                              router.push(`/admin/blog/${post.id}/edit`)
+                            }
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -850,9 +738,11 @@ export default function BlogAdminPage() {
                       <h3 className="font-semibold text-gray-900 text-lg line-clamp-2 mb-2 group-hover:text-teal-600 transition-colors">
                         {post.title}
                       </h3>
-                      <p className="text-sm text-gray-500 line-clamp-2 mb-3">
-                        {post.excerpt}
-                      </p>
+                      <div className="text-sm text-gray-500 line-clamp-2 mb-3 prose prose-sm max-w-none [&>*]:my-0 [&>p]:my-0 [&>strong]:font-semibold [&>em]:italic [&>code]:bg-gray-100 [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded [&>code]:text-xs">
+                        <div
+                          dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                        />
+                      </div>
                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                         <div className="flex items-center gap-4 text-sm text-gray-600">
                           <div className="flex items-center gap-1">
@@ -963,9 +853,13 @@ export default function BlogAdminPage() {
                             <h3 className="font-semibold text-lg text-gray-900 group-hover:text-teal-600 transition-colors">
                               {post.title}
                             </h3>
-                            <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                              {post.excerpt}
-                            </p>
+                            <div className="text-sm text-gray-500 mt-1 line-clamp-2 prose prose-sm max-w-none [&>*]:my-0 [&>p]:my-0 [&>strong]:font-semibold [&>em]:italic [&>code]:bg-gray-100 [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded [&>code]:text-xs">
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html: post.excerpt,
+                                }}
+                              />
+                            </div>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="flex items-center gap-1 text-sm text-gray-600">
@@ -1004,10 +898,9 @@ export default function BlogAdminPage() {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                onClick={() => {
-                                  setEditingPost(post);
-                                  setIsDialogOpen(true);
-                                }}
+                                onClick={() =>
+                                  router.push(`/admin/blog/${post.id}/edit`)
+                                }
                                 className="h-8 w-8"
                               >
                                 <Edit className="h-4 w-4" />
@@ -1055,317 +948,6 @@ export default function BlogAdminPage() {
         </AnimatePresence>
       </motion.div>
 
-      {/* Edit/Create Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-linear-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              {editingPost.id ? "Edit Blog Post" : "Create New Blog Post"}
-            </DialogTitle>
-            <DialogDescription className="text-gray-600">
-              Fill in the details for your blog post. All fields marked with *
-              are required.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-6 py-4">
-            {/* Image Upload */}
-            <div>
-              <Label className="text-gray-700">Featured Image</Label>
-              <div className="mt-2">
-                {editingPost.image ? (
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden border-2 border-gray-200">
-                    <img
-                      src={editingPost.image}
-                      alt="Featured"
-                      className="w-full h-full object-cover"
-                    />
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm"
-                      onClick={() =>
-                        setEditingPost((prev) => ({ ...prev, image: "" }))
-                      }
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-teal-500 transition-all duration-300 bg-linear-to-br from-gray-50 to-white">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                    {imageUploading ? (
-                      <div className="flex flex-col items-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-teal-600 mb-2" />
-                        <span className="text-sm text-gray-500">
-                          Uploading...
-                        </span>
-                      </div>
-                    ) : (
-                      <>
-                        <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                        <span className="text-sm text-gray-500">
-                          Click to upload featured image
-                        </span>
-                        <span className="text-xs text-gray-400 mt-1">
-                          Recommended: 1200x800px
-                        </span>
-                      </>
-                    )}
-                  </label>
-                )}
-              </div>
-            </div>
-
-            {/* Title & Slug */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="title" className="text-gray-700">
-                  Title *
-                </Label>
-                <Input
-                  id="title"
-                  value={editingPost.title || ""}
-                  onChange={handleTitleChange}
-                  placeholder="Enter post title"
-                  className="mt-1 border-gray-200 focus:border-teal-500 focus:ring-teal-500"
-                />
-              </div>
-              <div>
-                <Label htmlFor="slug" className="text-gray-700">
-                  Slug
-                </Label>
-                <Input
-                  id="slug"
-                  value={editingPost.slug || ""}
-                  onChange={(e) =>
-                    setEditingPost((prev) => ({
-                      ...prev,
-                      slug: e.target.value,
-                    }))
-                  }
-                  placeholder="post-url-slug"
-                  className="mt-1 border-gray-200 focus:border-teal-500 focus:ring-teal-500"
-                />
-              </div>
-            </div>
-
-            {/* Category & Author */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-gray-700">Category *</Label>
-                <Select
-                  value={editingPost.category || ""}
-                  onValueChange={(value) =>
-                    setEditingPost((prev) => ({ ...prev, category: value }))
-                  }
-                >
-                  <SelectTrigger className="mt-1 border-gray-200 focus:border-teal-500 focus:ring-teal-500">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="author" className="text-gray-700">
-                  Author *
-                </Label>
-                <Input
-                  id="author"
-                  value={editingPost.author || ""}
-                  onChange={(e) =>
-                    setEditingPost((prev) => ({
-                      ...prev,
-                      author: e.target.value,
-                    }))
-                  }
-                  placeholder="Author name"
-                  className="mt-1 border-gray-200 focus:border-teal-500 focus:ring-teal-500"
-                />
-              </div>
-            </div>
-
-            {/* Excerpt */}
-            <div>
-              <Label htmlFor="excerpt" className="text-gray-700">
-                Excerpt *
-              </Label>
-              <Textarea
-                id="excerpt"
-                value={editingPost.excerpt || ""}
-                onChange={(e) =>
-                  setEditingPost((prev) => ({
-                    ...prev,
-                    excerpt: e.target.value,
-                  }))
-                }
-                placeholder="Short description for preview..."
-                rows={3}
-                className="mt-1 border-gray-200 focus:border-teal-500 focus:ring-teal-500"
-              />
-            </div>
-
-            {/* Content */}
-            <div>
-              <Label htmlFor="content" className="text-gray-700">
-                Content *
-              </Label>
-              <Textarea
-                id="content"
-                value={editingPost.content || ""}
-                onChange={(e) =>
-                  setEditingPost((prev) => ({
-                    ...prev,
-                    content: e.target.value,
-                  }))
-                }
-                placeholder="Write your blog post content..."
-                rows={10}
-                className="mt-1 border-gray-200 focus:border-teal-500 focus:ring-teal-500 font-mono text-sm"
-              />
-            </div>
-
-            {/* Tags */}
-            <div>
-              <Label className="text-gray-700">Tags</Label>
-              <div className="flex gap-2 mt-1">
-                <Input
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  placeholder="Add a tag"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
-                  className="border-gray-200 focus:border-teal-500 focus:ring-teal-500"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleAddTag}
-                  className="border-gray-200 hover:border-gray-300"
-                >
-                  Add
-                </Button>
-              </div>
-              {editingPost.tags && editingPost.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {editingPost.tags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="cursor-pointer hover:bg-gray-200 transition-colors"
-                      onClick={() => handleRemoveTag(tag)}
-                    >
-                      {tag}
-                      <X className="h-3 w-3 ml-1" />
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Read Time & Settings */}
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="readTime" className="text-gray-700">
-                  Read Time
-                </Label>
-                <Input
-                  id="readTime"
-                  value={editingPost.readTime || ""}
-                  onChange={(e) =>
-                    setEditingPost((prev) => ({
-                      ...prev,
-                      readTime: e.target.value,
-                    }))
-                  }
-                  placeholder="5 min read"
-                  className="mt-1 border-gray-200 focus:border-teal-500 focus:ring-teal-500"
-                />
-              </div>
-              <div className="flex items-center gap-4 pt-6">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="published"
-                    checked={editingPost.published || false}
-                    onCheckedChange={(checked) =>
-                      setEditingPost((prev) => ({
-                        ...prev,
-                        published: checked,
-                      }))
-                    }
-                    className="data-[state=checked]:bg-teal-500"
-                  />
-                  <Label
-                    htmlFor="published"
-                    className="text-gray-700 cursor-pointer"
-                  >
-                    Publish
-                  </Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="featured"
-                    checked={editingPost.featured || false}
-                    onCheckedChange={(checked) =>
-                      setEditingPost((prev) => ({ ...prev, featured: checked }))
-                    }
-                    className="data-[state=checked]:bg-yellow-500"
-                  />
-                  <Label
-                    htmlFor="featured"
-                    className="text-gray-700 cursor-pointer"
-                  >
-                    Featured
-                  </Label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDialogOpen(false)}
-              disabled={isSubmitting}
-              className="border-gray-200 hover:border-gray-300"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className="bg-linear-to-r from-teal-500 to-yellow-500 hover:from-teal-600 hover:to-yellow-600"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  {editingPost.id ? "Updating..." : "Creating..."}
-                </>
-              ) : editingPost.id ? (
-                "Update Post"
-              ) : (
-                "Create Post"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Delete Confirmation */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
@@ -1394,6 +976,3 @@ export default function BlogAdminPage() {
     </div>
   );
 }
-
-
-

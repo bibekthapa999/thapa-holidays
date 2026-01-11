@@ -236,9 +236,9 @@ export default function BlogDetailPage() {
           </h1>
 
           {/* Excerpt */}
-          <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-            {post.excerpt}
-          </p>
+          <div className="text-lg text-gray-600 mb-8 leading-relaxed prose prose-lg max-w-none [&>*]:my-2 [&>p]:leading-relaxed [&>strong]:font-semibold [&>em]:italic [&>code]:bg-gray-100 [&>code]:px-2 [&>code]:py-1 [&>code]:rounded [&>code]:text-sm [&>code]:font-mono">
+            <div dangerouslySetInnerHTML={{ __html: post.excerpt }} />
+          </div>
 
           {/* Article Meta */}
           <div className="flex flex-wrap items-center gap-4 mb-8">
@@ -382,7 +382,7 @@ export default function BlogDetailPage() {
           className="prose prose-lg sm:prose-xl max-w-none mb-12"
         >
           <div
-            className="leading-relaxed text-gray-700"
+            className="leading-relaxed text-gray-700 prose prose-lg max-w-none [&>*]:my-3 [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:text-gray-900 [&>h1]:mt-6 [&>h1]:mb-4 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:text-gray-900 [&>h2]:mt-6 [&>h2]:mb-4 [&>h3]:text-lg [&>h3]:font-bold [&>h3]:text-gray-900 [&>h3]:mt-5 [&>h3]:mb-3 [&>p]:text-gray-700 [&>p]:leading-relaxed [&>p]:mb-4 [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-4 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-4 [&>li]:text-gray-700 [&>li]:leading-relaxed [&>li]:my-2 [&>blockquote]:border-l-4 [&>blockquote]:border-teal-500 [&>blockquote]:pl-6 [&>blockquote]:py-2 [&>blockquote]:italic [&>blockquote]:text-gray-600 [&>blockquote]:bg-gray-50 [&>blockquote]:my-6 [&>hr]:border-gray-300 [&>hr]:my-8 [&>hr]:border-t-2 [&>code]:bg-gray-100 [&>code]:px-2 [&>code]:py-1 [&>code]:rounded [&>code]:text-sm [&>code]:font-mono [&>code]:text-gray-800 [&>strong]:font-bold [&>strong]:text-gray-900 [&>em]:italic [&>em]:text-gray-700"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
         </motion.div>
